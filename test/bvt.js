@@ -1,7 +1,7 @@
+const { ethers } = require("hardhat");
 const { expect } = require("chai");
 
-const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
-const settings = require('./lib/settings');
+const settings = require("./lib/settings");
 
 // Test suite
 describe("BVT", function () {
@@ -22,17 +22,16 @@ describe("BVT", function () {
 
     it("Get balance", async function () {
         const balance = await contract.balanceOf(contract.signer.address);
-        expect(balance.toString()).to.equal(`100000000000${settings.decimalPart}`);
+        expect(balance.toString()).to.equal(settings.tokens(100000000000));
     });
 
     it("Transfer", async function () {
         let balance2 = await contract.balanceOf(settings.address2);
-        expect(balance2.toString()).to.equal('0');
+        expect(balance2.toString()).to.equal("0");
 
-        const amount = new BN(`10${settings.decimalPart}`);        
-        await contract.transfer(settings.address2, amount.toString());
+        await contract.transfer(settings.address2, settings.tokens(10));
 
         balance2 = await contract.balanceOf(settings.address2);
-        expect(balance2.toString()).to.equal(amount.toString());
+        expect(balance2.toString()).to.equal(settings.tokens(10));
     });
 });

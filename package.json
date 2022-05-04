@@ -15,12 +15,14 @@
   "license": "ISC",
   "devDependencies": {
     "@genx/app": "^2.0.2",
+    "@genx/july": "^1.0.4",
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@openzeppelin/contracts": "^4.6.0",
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "@openzeppelin/hardhat-upgrades": "^1.17.0",
     "@openzeppelin/test-helpers": "^0.5.15",
     "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
     "ethers": "^5.6.2",
     "hardhat": "^2.9.3",
     "web3": "^1.7.3"

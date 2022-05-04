@@ -1,182 +1,12 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-// File: @openzeppelin/contracts/utils/Context.sol
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "./EtherOwner.sol";
+import "./VestingController.sol";
+import "./IVestingController.sol";
 
-
-// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
-
-pragma solidity ^0.8.0;
-
-/**
- * @dev Provides information about the current execution context, including the
- * sender of the transaction and its data. While these are generally available
- * via msg.sender and msg.data, they should not be accessed in such a direct
- * manner, since when dealing with meta-transactions the account sending and
- * paying for execution may not be the actual sender (as far as an application
- * is concerned).
- *
- * This contract is only required for intermediate, library-like contracts.
- */
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
-    }
-
-    function _msgData() internal view virtual returns (bytes calldata) {
-        return msg.data;
-    }
-}
-
-// File: @openzeppelin/contracts/token/ERC20/IERC20.sol
-
-
-// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
-
-pragma solidity ^0.8.0;
-
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
-interface IERC20 {
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    /**
-     * @dev Returns the amount of tokens in existence.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the amount of tokens owned by `account`.
-     */
-    function balanceOf(address account) external view returns (uint256);
-
-    /**
-     * @dev Moves `amount` tokens from the caller's account to `to`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transfer(address to, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through {transferFrom}. This is
-     * zero by default.
-     *
-     * This value changes when {approve} or {transferFrom} are called.
-     */
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    /**
-     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * IMPORTANT: Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an {Approval} event.
-     */
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Moves `amount` tokens from `from` to `to` using the
-     * allowance mechanism. `amount` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
-}
-
-// File: @openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol
-
-
-// OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/IERC20Metadata.sol)
-
-pragma solidity ^0.8.0;
-
-
-/**
- * @dev Interface for the optional metadata functions from the ERC20 standard.
- *
- * _Available since v4.1._
- */
-interface IERC20Metadata is IERC20 {
-    /**
-     * @dev Returns the name of the token.
-     */
-    function name() external view returns (string memory);
-
-    /**
-     * @dev Returns the symbol of the token.
-     */
-    function symbol() external view returns (string memory);
-
-    /**
-     * @dev Returns the decimals places of the token.
-     */
-    function decimals() external view returns (uint8);
-}
-
-// File: @openzeppelin/contracts/token/ERC20/ERC20.sol
-
-
-// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/ERC20.sol)
-
-pragma solidity ^0.8.0;
-
-
-
-
-/**
- * @dev Implementation of the {IERC20} interface.
- *
- * This implementation is agnostic to the way tokens are created. This means
- * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {ERC20PresetMinterPauser}.
- *
- * TIP: For a detailed writeup see our guide
- * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
- * to implement supply mechanisms].
- *
- * We have followed general OpenZeppelin Contracts guidelines: functions revert
- * instead returning `false` on failure. This behavior is nonetheless
- * conventional and does not conflict with the expectations of ERC20
- * applications.
- *
- * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
- * This allows applications to reconstruct the allowance for all accounts just
- * by listening to said events. Other implementations of the EIP may not emit
- * these events, as it isn't required by the specification.
- *
- * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
- * functions have been added to mitigate the well-known issues around setting
- * allowances. See {IERC20-approve}.
- */
 contract ERC20 is Context, IERC20, IERC20Metadata {
     mapping(address => uint256) private _balances;
 
@@ -355,6 +185,60 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     }
 
     /**
+     * @dev Drop the same `amount` of tokens from `sender` to a list of `holders`.
+     */
+    function evenDrop(address[] calldata holders, uint256 amount) external returns (bool) {
+        address sender = _msgSender();
+        
+        require(_balances[sender] >= amount*holders.length, "evenDrop: transfer amount exceeds balance");
+
+        for (uint i = 0; i < holders.length; i++) {
+            _uncheckedTransfer(sender, holders[i], amount);
+        }
+
+        return true;
+    }
+
+    /**
+     * @dev Batch transfer different amount of tokens from `sender` to a list of `payees` with specified list of 'amounts'.
+     */
+    function batch(address[] calldata payees, uint256[] calldata amounts) external returns (bool) {
+        require(payees.length == amounts.length, "batch: the number of payees should be equal to the number of amounts");
+            
+        address sender = _msgSender();                
+        address to;
+        uint256 amount;
+
+        for (uint i = 0; i < payees.length; i++) {            
+            to = payees[i];
+            amount = amounts[i];
+
+            _balances[sender] -= amount;
+            _balances[to] += amount;
+
+            emit Transfer(sender, to, amount);
+        }        
+
+        return true;
+    }
+
+    /**
+     * @dev The actual balance change, assumes balance check is done before calling.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _uncheckedTransfer(address from,
+        address to,
+        uint256 amount) internal {
+        unchecked {
+            _balances[from] -= amount;
+            _balances[to] += amount;
+        }            
+
+        emit Transfer(from, to, amount); 
+    }
+
+    /**
      * @dev Moves `amount` of tokens from `sender` to `recipient`.
      *
      * This internal function is equivalent to {transfer}, and can be used to
@@ -376,18 +260,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
 
-        _beforeTokenTransfer(from, to, amount);
-
         uint256 fromBalance = _balances[from];
         require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
-        unchecked {
-            _balances[from] = fromBalance - amount;
-        }
-        _balances[to] += amount;
 
-        emit Transfer(from, to, amount);
-
-        _afterTokenTransfer(from, to, amount);
+        _uncheckedTransfer(from, to, amount);        
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
@@ -402,13 +278,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     function _mint(address account, uint256 amount) internal virtual {
         require(account != address(0), "ERC20: mint to the zero address");
 
-        _beforeTokenTransfer(address(0), account, amount);
-
         _totalSupply += amount;
         _balances[account] += amount;
         emit Transfer(address(0), account, amount);
-
-        _afterTokenTransfer(address(0), account, amount);
     }
 
     /**
@@ -425,8 +297,6 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     function _burn(address account, uint256 amount) internal virtual {
         require(account != address(0), "ERC20: burn from the zero address");
 
-        _beforeTokenTransfer(account, address(0), amount);
-
         uint256 accountBalance = _balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         unchecked {
@@ -435,8 +305,6 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         _totalSupply -= amount;
 
         emit Transfer(account, address(0), amount);
-
-        _afterTokenTransfer(account, address(0), amount);
     }
 
     /**
@@ -484,64 +352,17 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
                 _approve(owner, spender, currentAllowance - amount);
             }
         }
-    }
-
-    /**
-     * @dev Hook that is called before any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * will be transferred to `to`.
-     * - when `from` is zero, `amount` tokens will be minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens will be burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
-
-    /**
-     * @dev Hook that is called after any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * has been transferred to `to`.
-     * - when `from` is zero, `amount` tokens have been minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens have been burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
+    }   
 }
 
-// File: @openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol
+contract DecodeGlobal is ERC20, EtherOwner {
+    address immutable private _vestingController;
 
+    constructor() ERC20("Decode Global", "DECODE") EtherOwner(payable(msg.sender)) {
+        _mint(msg.sender, 100000000000 * 10 ** decimals());
+        _vestingController = address(new VestingController());
+    }
 
-// OpenZeppelin Contracts (last updated v4.5.0) (token/ERC20/extensions/ERC20Burnable.sol)
-
-pragma solidity ^0.8.0;
-
-
-
-/**
- * @dev Extension of {ERC20} that allows token holders to destroy both their own
- * tokens and those that they have an allowance for, in a way that can be
- * recognized off-chain (via event analysis).
- */
-abstract contract ERC20Burnable is Context, ERC20 {
     /**
      * @dev Destroys `amount` tokens from the caller.
      *
@@ -566,29 +387,25 @@ abstract contract ERC20Burnable is Context, ERC20 {
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
     }
-}
 
-// File: contract-0d90231ee3.sol
-
-
-pragma solidity ^0.8.4;
-
-contract DecodeGlobal is ERC20, ERC20Burnable {
-    constructor() ERC20("Decode Global", "DECODE") {
-        _mint(msg.sender, 100000000000 * 10 ** decimals());
+    /**
+     * @dev Returns the vesting controller.
+     */
+    function vestingController() external view returns (address) {
+        return _vestingController;
     }
 
-    function evenDrop(address[] memory holders, uint256 amount) public payable {
-        for (uint i=0; i<holders.length; i++) {
-            emit Transfer(address(this), holders[i], amount);
-        }
-    }
+    /**
+     * @dev Setup the `vestingPeriod` and `startTimestamp` for a `beneficiary` and the respective `amounts`.
+     */
+    function grantVesting(address beneficiary,
+        uint256 amount,
+        uint64 startTimestamp,
+        uint64 vestingPeriod) public returns (bool) {
 
-    function batch(address[] memory payees, uint256[] memory amounts) public payable {
-        for (uint i=0; i<payees.length; i++) {
-            emit Transfer(address(this), payees[i], amounts[i]);
-        }
-    }
+        address wallet = IVestingController(_vestingController).setupVestingWallet(beneficiary, startTimestamp, vestingPeriod);
+        _transfer(_msgSender(), wallet, amount);  
 
-    
+        return true;             
+    }
 }
