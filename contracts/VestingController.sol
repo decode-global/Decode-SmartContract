@@ -18,13 +18,15 @@ contract VestingController is IVestingController {
     function setupVestingWallet(address beneficiary, uint64 startTimestamp,
         uint64 vestingPeriod)
         public virtual override
-        returns(address wallet)
+        returns(address)
     {
-        wallet = address(new VestingWallet(beneficiary, startTimestamp, vestingPeriod));
+        address wallet = address(new VestingWallet(beneficiary, startTimestamp, vestingPeriod));
 
         _wallets[beneficiary].push(wallet);
 
         emit Created(wallet, msg.sender, beneficiary, block.timestamp, startTimestamp, vestingPeriod);        
+
+        return wallet;
     }
 }
 

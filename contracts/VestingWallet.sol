@@ -43,21 +43,21 @@ contract VestingWallet is EtherOwner {
     /**
      * @dev Getter for the beneficiary address.
      */
-    function beneficiary() public view virtual returns (address) {
+    function beneficiary() external view virtual returns (address) {
         return _beneficiary;
     }
 
     /**
      * @dev Getter for the start timestamp.
      */
-    function start() public view virtual returns (uint64) {
+    function start() external view virtual returns (uint64) {
         return _start;
     }
 
     /**
      * @dev Getter for the vesting duration.
      */
-    function duration() public view virtual returns (uint64) {
+    function duration() external view virtual returns (uint64) {
         return _duration;
     }
 
@@ -73,12 +73,15 @@ contract VestingWallet is EtherOwner {
      *
      * Emits a {TokensReleased} event.
      */
-    function release(address token) public virtual {
+    function release(address token) external virtual {
         uint256 releasable = vestedAmount(token, uint64(block.timestamp)) - released(token);
-        _tokenReleased[token] += releasable;
-        emit TokenReleased(token, releasable);
 
-        SafeERC20.safeTransfer(IERC20(token), beneficiary(), releasable);
+        if (releasable > 0) {
+            _tokenReleased[token] += releasable;
+            emit TokenReleased(token, releasable);
+
+            SafeERC20.safeTransfer(IERC20(token), _beneficiary, releasable);
+        }
     }
 
     /**
@@ -93,12 +96,12 @@ contract VestingWallet is EtherOwner {
      * an asset given its total historical allocation.
      */
     function _vestingSchedule(uint256 totalAllocation, uint64 timestamp) internal view virtual returns (uint256) {
-        if (timestamp < start()) {
+        if (timestamp < _start) {
             return 0;
-        } else if (timestamp > start() + duration()) {
+        } else if (timestamp > _start + _duration) {
             return totalAllocation;
         } else {
-            return (totalAllocation * (timestamp - start())) / duration();
+            return (totalAllocation * (timestamp - _start)) / _duration;
         }
     }
 }

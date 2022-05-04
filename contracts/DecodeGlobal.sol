@@ -401,11 +401,10 @@ contract DecodeGlobal is ERC20, EtherOwner {
     function grantVesting(address beneficiary,
         uint256 amount,
         uint64 startTimestamp,
-        uint64 vestingPeriod) public returns (bool) {
+        uint64 vestingPeriod) external returns (address) {
 
         address wallet = IVestingController(_vestingController).setupVestingWallet(beneficiary, startTimestamp, vestingPeriod);
         _transfer(_msgSender(), wallet, amount);  
-
-        return true;             
+        return wallet;
     }
 }
