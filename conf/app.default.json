@@ -1,0 +1,18 @@
+{
+    "timezone": "Etc/UTC",        
+    "appLogger": "appLog",    
+    "loggers": {        
+        "appLog": {
+            "useMetaKey": "metadata",            
+            "transports": [
+                {
+                    "type": "console",                   
+                    "options": {      
+                        "level": "info",                      
+                        "format": "#!jsv: log.format.combine(log.format.colorize(), log.format.simple())"
+                    }
+                }
+            ]
+        }
+    }
+}
